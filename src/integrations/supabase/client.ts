@@ -2,8 +2,31 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+/**
+ * IMPORTANTE:
+ * As variáveis de ambiente podem não existir (ex.: build no VPS sem .env,
+ * ou durante a migração para Postgres próprio). O `createClient` lança
+ * "supabaseUrl is required" nesse caso, o que quebra TODO o app (tela branca),
+ * porque este módulo é importado no topo da árvore de componentes.
+ *
+ * Por isso usamos valores de fallback inertes: o app continua renderizando e
+ * apenas as chamadas de rede específicas falham (com erro tratável).
+ */
+const SUPABASE_URL: string =
+  import.meta.env.VITE_SUPABASE_URL ?? 'http://localhost:54321';
+const SUPABASE_PUBLISHABLE_KEY: string =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? 'public-anon-key-placeholder';
+
+export const isSupabaseConfigured: boolean = Boolean(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+);
+
+if (!isSupabaseConfigured) {
+  console.warn(
+    '[supabase] Variáveis VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY ausentes. ' +
+      'Rodando em modo degradado — chamadas ao backend irão falhar até a migração/configuração ser concluída.',
+  );
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -13,5 +36,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+  },
 });
