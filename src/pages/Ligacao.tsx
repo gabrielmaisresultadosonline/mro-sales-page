@@ -17,8 +17,10 @@ const Ligacao = () => {
   const [callDuration, setCallDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const ringtoneVideoRef = useRef<HTMLVideoElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const vibrationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // `NodeJS.Timeout` não existe no ambiente do browser (sem @types/node).
+  // `ReturnType<typeof setInterval>` resolve para o tipo correto em qualquer runtime.
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const vibrationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Get admin settings for pixel configuration
   const adminSettings = getAdminData().settings;
